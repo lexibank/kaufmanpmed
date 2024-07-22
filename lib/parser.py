@@ -16,7 +16,8 @@ on Mayan historical linguistics, however, was established by Terrence Kaufman, a
 
 """
 import re
-import itertools
+import pathlib
+import functools
 import dataclasses
 
 from .languoids import match_languoids
@@ -70,9 +71,71 @@ sets of entries that have the same or semantically related gloss are
 bounded by xxxxx
 
 """
+@dataclasses.dataclass
+class Gloss:
+    spanish: str = None
+    english: str = None
+
+    @classmethod
+    def from_string(cls, s):
+        sp, _, en = s.partition('//')
+        return cls(sp.strip() or None, en.strip() or None)
 
 
-def parse_witness():
+@dataclasses.dataclass
+class Witness:
+    lang: str
+    form: str = None
+    gloss: Gloss = None
+    source: str = None
+    comment: str = None
+    pos: str = None
+
+    @classmethod
+    def from_line(cls, line):
+        try:
+            lang, line = line.split(None, maxsplit=1)
+        except:
+            lang = line
+        lang = match_languoids(lang)
+        assert len(lang) == 1
+        lang = lang[0]
+
+        source = re.search('\s*\[(?P<source>[a-zA-Z0-9\-& ():*,#.?]+)]$', line)
+        if source:
+            line = line[:source.start()].strip()
+            source = source.group('source')
+
+        if re.match(r'#[a-z\-]+\s+/', line):
+            line = '{} {}'.format(*line.split(None, maxsplit=1))
+
+        form, pos, gloss, comment = None, None, None, None
+        comps = re.split(r'\s\s+', re.sub(r'//\s\s+', '// ', line))
+        if len(comps) == 3:
+            form, pos, gloss = comps
+            if pos.startswith('/') and pos.endswith('/'):
+                form += ' {}'.format(pos)
+                pos = None
+            elif pos.startswith('[') and pos.endswith(']'):
+                comment = pos[1:-1].strip()
+                pos = None
+        elif len(comps) == 2:
+            form, gloss = comps
+        elif len(comps) == 1:
+            form = comps[0]
+        else:
+            print(line)
+
+        return cls(
+            lang,
+            form=form,
+            gloss=Gloss.from_string(gloss) if gloss else None,
+            source=source,
+            pos=pos,
+            comment=comment)
+
+
+def iter_witness(lines):
     """
     langcode   form   pos?   gloss, spanish // english   source
 
@@ -83,61 +146,69 @@ def parse_witness():
      TUZ        7i:ch                                   s3 (-itz) marido [ETR] [ERH] //                [TK67-68]
 
     """
-
-
-def iter_lines_with_pagenumbers_stripped(lines):
-    page_number_line = re.compile(
-        r'(?P<page>[0-9]+)\s+Kaufman: preliminary Mayan Etymological Dictionary')
-    page = None
-
-    for line in lines:
-        m = page_number_line.match(line)
-        if m:
-            if page:
-                assert int(m.group('page')) == page + 1, line
-            page = int(m.group('page'))
+    witness = None
+    for i, line in enumerate(lines):
+        line = line.strip()
+        if not line:
+            continue
+        if line.startswith('['):  # a comment
+            assert witness, line
+            witness.comment = line[1:-1].strip()
         else:
-            yield line
-            #yield 51 if page is None else page + 1, line
+            if witness:
+                yield witness
+            witness = Witness.from_line(line)
+    if witness:
+        yield witness
 
 
-def etymologies_lines(lines):
-    for line in itertools.takewhile(
-        lambda line: 'T H E     E N D' not in line,
-        itertools.dropwhile(
-            lambda line: 'MAYAN ETYMOLOGIES' not in line,
-            iter_lines_with_pagenumbers_stripped(lines))
-    ):
-        if 'MAYAN ETYMOLOGIES' not in line:
-            yield line
+class Dictionary:
+    def __init__(self, p):
+        p = pathlib.Path(p)
+        self.full_lines = list(iter_lines(p.read_text(encoding='utf8').split('\n')))
+        self.lines = [l[0] for l in self.full_lines]
+        self.semantic_fields = []
+        last_sf = None
+        for sf, subfield, chunk in self._iter_semantic_fields(self.full_lines):
+            self.semantic_fields.append(SemanticField(
+                last_sf if subfield else sf,
+                sf if subfield else None,
+                chunk,
+            ))
+            if not subfield:
+                last_sf = sf
 
+    def __getitem__(self, item):
+        for sf in self.semantic_fields:
+            if sf.main == item or (sf.sub and sf.sub == item):
+                return sf
+        for sf in self.semantic_fields:
+            for etymon in sf.etyma:
+                if etymon.protoform and item in etymon.protoform:
+                    return etymon
+        raise KeyError(item)
 
-def iter_semantic_fields(lines):
-    """
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-     %% COLOR %%
-     %%%%%%%%%%%
-                                   WHITE
-    """
-    sf_title_pattern = re.compile(r'(?P<subfield>\s+)?%%?\s+(?P<title>[^%]+)%%?')
-    sf_frame_pattern = re.compile(r'\s*%%%%[%]+')
+    @staticmethod
+    def _iter_semantic_fields(lines):
+        sf_title_pattern = re.compile(r'(?P<subfield>\s+)?%%?\s+(?P<title>[^%]+)%%?')
+        sf_frame_pattern = re.compile(r'\s*%%%%[%]+')
 
-    sf, subfield, chunk = None, False, []
-    for line in lines:
-        m = sf_frame_pattern.fullmatch(line)
-        if m:
-            continue
-        m = sf_title_pattern.fullmatch(line)
-        if m:
-            if sf and chunk:
-                yield sf, subfield, chunk
-                sf, subfield, chunk = None, False, []
-            sf = m.group('title').strip()
-            subfield = bool(m.group('subfield'))
-            continue
-        chunk.append(line)
-    assert sf, chunk
-    yield sf, subfield, chunk
+        sf, subfield, chunk = None, False, []
+        for line, page, lineno in lines:
+            m = sf_frame_pattern.fullmatch(line)
+            if m:
+                continue
+            m = sf_title_pattern.fullmatch(line)
+            if m:
+                if sf and chunk:
+                    yield sf, subfield, chunk
+                    sf, subfield, chunk = None, False, []
+                sf = m.group('title').strip()
+                subfield = bool(m.group('subfield'))
+                continue
+            chunk.append((line, page, lineno))
+        assert sf, chunk
+        yield sf, subfield, chunk
 
 
 @dataclasses.dataclass
@@ -155,7 +226,41 @@ class Concept:
         return res
 
 
-def parse_semantic_field(lines, main, sub, rootid=0):
+@dataclasses.dataclass
+class SemanticField:
+    main: str
+    sub: str
+    lines: list
+
+    @functools.cached_property
+    def etyma(self):
+        res = []
+        for concept, protoform, witnesses, comments, page, line in iter_etyma(
+                self.lines, self.main, self.sub):
+            witnesses = list(iter_witness(witnesses))
+            res.append(Etymon(concept, protoform, witnesses, comments, page, line))
+        return res
+
+
+@dataclasses.dataclass
+class Etymon:
+    concept: Concept
+    protoform: str
+    witnesses: list
+    comments: list
+    page: int
+    line: int
+
+    def __str__(self):
+        res = [self.protoform]
+        if self.concept:
+            res.append('%% {} %%'.format(self.concept.name))
+        for w in self.witnesses:
+            res.append('    {}'.format(w))
+        return '\n'.join(res)
+
+
+def iter_etyma(lines, main, sub, rootid=0):
     """
 [A-Z0-9,./-;]
 
@@ -174,23 +279,14 @@ def parse_semantic_field(lines, main, sub, rootid=0):
     #
     # FIXME: handle multiple comments per reconstruction, look for "following form"!
     #
+    protoform, witnesses, concept, comments = None, [], None, []
+    start_page, start_lineno = None, None
 
-    comments = []
-    comment, in_comment = [], False
-    concept = None
-    protoform = None
-    witnesses = []
-
-    for line in iter_lines(lines):
-        if in_comment:
-            assert comment and not line.startswith(' '), line
-            comment.append(line.strip())
-            if line.strip().endswith(']'):
-                in_comment = False
-                comment[-1] = comment[-1][:-1]
-                comments.append(' '.join(comment))
-                comment = []
-            continue
+    for line, page, lineno in lines:
+        if start_page is None:
+            start_page = page
+        if start_lineno is None:
+            start_lineno = lineno
 
         if line.startswith('          '):
             m = concept_pattern.fullmatch(line.strip())
@@ -200,23 +296,27 @@ def parse_semantic_field(lines, main, sub, rootid=0):
 
         if re.fullmatch(r'xxxxxxx[x]+', line.strip()):
             if witnesses:
-                yield concept, protoform, witnesses, comments
+                yield concept, protoform, witnesses, comments, start_page, start_lineno
+            start_lineno, start_page = lineno, page
             protoform, witnesses, concept, comments = None, [], None, []
             continue
 
         if re.fullmatch(r'=====[=]+', line.strip()):
             if witnesses:
-                yield concept, protoform, witnesses, comments
-            protoform, witnesses, concept, comments = None, [], None, []
+                yield concept, protoform, witnesses, comments, start_page, start_lineno
+            start_lineno, start_page = lineno, page
+            protoform, witnesses, comments = None, [], []
             rootid += 1
             continue
 
         if line.startswith('    '):  # a witness line
-            #if not protoform and not witnesses:
-            #    #print(line)
-            #    pass
+            if line.strip().startswith('['):  # a witness comment
+                assert line.strip().endswith(']'), line
+            else:
+                langs = match_languoids(line.strip().split()[0])
+                assert langs and len(langs) == 1, line.strip()
             witnesses.append(line)
-        else:  # a reconstruction
+        else:  # A line with no leading whitespace, presumably a reconstruction.
             if not line.strip():
                 continue
 
@@ -225,29 +325,23 @@ def parse_semantic_field(lines, main, sub, rootid=0):
                 concept = Concept(name=m.group('name'), species=m.group('species'))
                 line = line.partition(m.group('sep'))[2].strip()
 
-            if match_languoids(line.split()[0]):  # an etymon
-                #
-                # FIXME: yield a cognate set!
-                #
+            if match_languoids(line.split()[0]):  # an etymon with an identified proto-language.
                 if witnesses:
-                    if witnesses:
-                        yield concept, protoform, witnesses, comments
-                    protoform, witnesses, comments = None, [], []
+                    yield concept, protoform, witnesses, comments, start_page, start_lineno
+                    # Concept is not reset!
+                start_lineno, start_page = lineno, page
+                witnesses, comments = [], []
                 protoform = line
-                #print(concept)
-                pass
             elif line.startswith('*') or line.startswith('#'):
+                # just a reconstruction without identified proto-language
                 if witnesses:
-                    if witnesses:
-                        yield concept, protoform, witnesses, comments
-                    protoform, witnesses, comments = None, [], []
+                    yield concept, protoform, witnesses, comments, start_page, start_lineno
+                start_lineno, start_page = lineno, page
+                witnesses, comments = [], []
                 protoform = line
             elif line.startswith('['):
-                comment.append(line[1:].strip())
-                if not line.strip().endswith(']'):
-                    in_comment = True
-                else:
-                    comment[-1] = comment[-1][:-1]
+                assert line.endswith(']')
+                comments.append(line[1:-1].strip())
             elif line.startswith('cf. '):  # a "see also" witness
                 pass
             elif line == 'cf.':
@@ -263,18 +357,5 @@ def parse_semantic_field(lines, main, sub, rootid=0):
             else:
                 # its to (in)
                 m = re.fullmatch(r'"?([A-Z0-9]+|to)(\s+([A-Z\-0-9]+|its|of|to|\(in\)|\+))*"?(\s+(=\s+)?`?[a-z/, ]+\'?)?', line)
-                assert len(line) > 5 and m, line
+                assert len(line) > 5 and m, '{}: {}'.format(lineno, line)
                 concept = Concept(name=line)
-
-
-def parse(lines):
-    last_sf = None
-
-    for sf, subfield, chunk in iter_semantic_fields(etymologies_lines(lines)):
-        parse_semantic_field(
-            chunk,
-            last_sf if subfield else sf,
-            sf if subfield else None,
-        )
-        if not subfield:
-            last_sf = sf
