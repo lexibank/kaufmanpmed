@@ -15,6 +15,7 @@ on Mayan historical linguistics, however, was established by Terrence Kaufman, a
 > the default model of genetic relations among Mayan languages for nearly half a century.
 
 """
+import itertools
 import re
 import pathlib
 import functools
@@ -23,21 +24,7 @@ import dataclasses
 from .languoids import match_languoids
 from .lines import iter_lines
 
-#
-# FIXME: handle continuation lines
 """
-     TUZ    b'eha7                                  s              arroyo; 'sale un poco de agua en algun
-                                                                      ladero/cerro' [ETR] //                 [TK67-68]
-"""
-#
-# FIXME: explanations:
-"""
-(aj= means prepound adjective)
-"""
-#
-
-"""
-
 Since the etymologies (or cognate sets) are listed by semantic field,
 occasionally parts of a single etymology have (inadvertently) been cited in
 more than one place. TK would be glad if any cases that have escaped his
@@ -61,7 +48,6 @@ from Epigraphic Mayan are cited in angle brackets, with signs in the
 script separated by hyphens, thus <ba-la-ma>.
 
 
-
 entries that have a common root are separated by two blank lines
 
 sets of entries that have a common root are separated from adjacent (sets
@@ -69,7 +55,6 @@ of) entries that have a different root by =====
 
 sets of entries that have the same or semantically related gloss are
 bounded by xxxxx
-
 """
 @dataclasses.dataclass
 class Gloss:
@@ -83,13 +68,14 @@ class Gloss:
 
 
 @dataclasses.dataclass
-class Witness:
+class Reflex:
     lang: str
     form: str = None
     gloss: Gloss = None
     source: str = None
     comment: str = None
     pos: str = None
+    orig_lang: str = None
 
     @classmethod
     def from_line(cls, line):
@@ -97,7 +83,7 @@ class Witness:
             lang, line = line.split(None, maxsplit=1)
         except:
             lang = line
-        lang = match_languoids(lang)
+        lang, orig_lang = match_languoids(lang)
         assert len(lang) == 1
         lang = lang[0]
 
@@ -124,7 +110,11 @@ class Witness:
         elif len(comps) == 1:
             form = comps[0]
         else:
-            print(line)
+            #
+            # FIXME!
+            #
+            pass
+            #print(line)
 
         return cls(
             lang,
@@ -132,20 +122,12 @@ class Witness:
             gloss=Gloss.from_string(gloss) if gloss else None,
             source=source,
             pos=pos,
-            comment=comment)
+            comment=comment,
+            orig_lang=orig_lang,
+        )
 
 
 def iter_witness(lines):
-    """
-    langcode   form   pos?   gloss, spanish // english   source
-
-      YUK    #mam                               s         padre de madre, primo //           [m]
-
-    comments on pos: (-itz), (-atz), ...
-
-     TUZ        7i:ch                                   s3 (-itz) marido [ETR] [ERH] //                [TK67-68]
-
-    """
     witness = None
     for i, line in enumerate(lines):
         line = line.strip()
@@ -157,7 +139,7 @@ def iter_witness(lines):
         else:
             if witness:
                 yield witness
-            witness = Witness.from_line(line)
+            witness = Reflex.from_line(line)
     if witness:
         yield witness
 
@@ -238,24 +220,152 @@ class SemanticField:
         for concept, protoform, witnesses, comments, page, line in iter_etyma(
                 self.lines, self.main, self.sub):
             witnesses = list(iter_witness(witnesses))
-            res.append(Etymon(concept, protoform, witnesses, comments, page, line))
+            res.append(Etymon.from_data(concept, protoform, witnesses, comments, page, line))
         return res
+
+
+@dataclasses.dataclass
+class Protoform:
+    lang: str
+    form: str
+    gloss: str
+    pos: str = None
+    comment: str = None
+    number: str = None
+    orig_lang: str = None
+
+    @classmethod
+    def from_line(cls, protoform):
+        def repl_apos(s):
+            for k, v in [("man's", "man__s"), ("mother's", "mother__s")]:
+                s = s.replace(k, v)
+            return s
+
+        def repl_underscore(s):
+            for k, v in [("man's", "man__s"), ("mother's", "mother__s")]:
+                s = s.replace(v, k)
+            return s
+
+        # Parse langspec:
+        orig = None
+        if protoform.startswith('*') or protoform.startswith('#'):
+            langspec = None
+        elif re.search(r'\s', protoform):
+            langspec, protoform = protoform.split(None, maxsplit=1)
+        else:
+            langspec, protoform = protoform, None
+        if langspec:
+            res, orig = match_languoids(langspec)
+            assert res
+            langspec = '+'.join(res)
+
+        comment, gloss, source, number, pos = [], [], None, None, None
+
+        # Parse gloss:
+        if protoform:
+            protoform = repl_apos(protoform)
+            # "STUFF" = `stuff';
+            match = re.search(r'"(?P<g1>[^"]+)"(\s*(=\s*)?`(?P<g2>[^\']+)\')?;?', protoform)
+            if match:
+                gloss.append(match.group('g1'))
+                if match.group('g2'):
+                    gloss.append(match.group('g2'))
+                protoform = protoform[:match.start()] + protoform[match.end():]
+                if not match.group('g2'):
+                    match = re.search(r' = (?P<g2>[a-z]+( [a-z]+)*)', protoform)
+                    if match:
+                        gloss.append(match.group('g2'))
+                        protoform = protoform[:match.start()] + protoform[match.end():]
+                protoform = protoform.lstrip(' ')
+
+            match = re.search(r'`(?P<g>[^\']+)\'(\s+\((?P<spec>[^)]+)\))?', protoform)
+            if match:
+                assert not gloss, protoform
+                gloss.append(match.group('g'))
+                if match.group('spec'):
+                    gloss.append(match.group('spec'))
+                protoform = protoform[:match.start()] + protoform[match.end():]
+
+            if gloss:
+                gloss = [repl_underscore(gl) for gl in gloss]
+            protoform = repl_underscore(protoform)
+
+            while '[' in protoform:
+                protoform, _, inbraces = protoform.partition('[')
+                inbraces, _, rem = inbraces.partition(']')
+                protoform += rem
+                if inbraces in {'1', '2'}:
+                    number = inbraces
+                    protoform = protoform.rstrip(' ')
+                elif 'TK' in inbraces:
+                    assert not source
+                    source = inbraces
+                else:
+                    comment.append(inbraces)
+
+            pf, ingloss = '', False
+            for s in re.split(r'(\s\s+)', protoform):
+                if '//' in s:
+                    ingloss = True
+                if ingloss:
+                    if s.strip():
+                        gloss.append(s.strip())
+                else:
+                    pf += s
+            protoform = pf.strip()
+
+            for i, ss in enumerate(re.split(r'\s\s+', protoform)):
+                if i == 0:
+                    protoform = ss
+                elif ss in {
+                    "vt", "vi", "vt > passive", "vi < P",
+                    "s", "P", "sv", "dir", "num",
+                    "aj", "aj < P", "a(P)",
+                    "reflexive pronoun"}:
+                    pos = ss
+                else:
+                    gloss.append(ss)
+
+        clean_gloss = []
+        for gl in gloss:
+            gl = gl.strip()
+            if gl:
+                if '//' in gl:
+                    es, _, en = gl.partition('//')
+                    if es.strip():
+                        clean_gloss.append('{} [es]'.format(es.strip()))
+                    if en.strip():
+                        clean_gloss.append('{} [en]'.format(en.strip()))
+                else:
+                    clean_gloss.append(gl)
+
+        gloss = '; '.join(clean_gloss)
+        return cls(langspec, protoform, gloss, pos, '; '.join(comment), number, orig_lang=orig)
 
 
 @dataclasses.dataclass
 class Etymon:
     concept: Concept
     protoform: str
-    witnesses: list
+    reflexes: list[Reflex]
     comments: list
     page: int
     line: int
+
+    @classmethod
+    def from_data(cls, concept, protoform, witnesses, comments, page, line):
+        if protoform:
+            protoform = Protoform.from_line(protoform)
+            if protoform.gloss and not concept:
+                concept = Concept(protoform.gloss)
+
+        return cls(concept, protoform, witnesses, comments, page, line)
 
     def __str__(self):
         res = [self.protoform]
         if self.concept:
             res.append('%% {} %%'.format(self.concept.name))
-        for w in self.witnesses:
+        for w in self.reflexes:
             res.append('    {}'.format(w))
         return '\n'.join(res)
 
@@ -313,7 +423,7 @@ def iter_etyma(lines, main, sub, rootid=0):
             if line.strip().startswith('['):  # a witness comment
                 assert line.strip().endswith(']'), line
             else:
-                langs = match_languoids(line.strip().split()[0])
+                langs, _ = match_languoids(line.strip().split()[0])
                 assert langs and len(langs) == 1, line.strip()
             witnesses.append(line)
         else:  # A line with no leading whitespace, presumably a reconstruction.
@@ -359,3 +469,6 @@ def iter_etyma(lines, main, sub, rootid=0):
                 m = re.fullmatch(r'"?([A-Z0-9]+|to)(\s+([A-Z\-0-9]+|its|of|to|\(in\)|\+))*"?(\s+(=\s+)?`?[a-z/, ]+\'?)?', line)
                 assert len(line) > 5 and m, '{}: {}'.format(lineno, line)
                 concept = Concept(name=line)
+
+    if witnesses:
+        yield concept, protoform, witnesses, comments, start_page, start_lineno

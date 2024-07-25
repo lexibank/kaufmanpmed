@@ -1,164 +1,132 @@
 ID,Name,Glottocode,Comment,Type
-WAS,Wasteko /teenek/,huas1242,,language
-WASocc,"occidental/western (Tancanhuitz /k'aan=witx/, Aquismo*n /7akits=mom/)",huas1242,,dialect
-WAScen,central (Tantoyuca /tam toyok/),huas1242,,dialect
-WASori,"oriental/western (Chontla, Chinampa)",huas1242,,dialect
-WASw,Western (Tancanhuitz),huas1242,,dialect
-WASc,Central (Tantoyuca),huas1242,,dialect
-WASe,"Eastern (Chontla, Chinampa)",huas1242,,dialect
-WAS*,WAS?,huas1242,unclear which dialect,dialect
-Was,WAS?,huas1242,Alias for WAS?,language
-MAM,Mam /qyool/,mamm1241,,language
-MAMcol,Colonial Northern Mam,mamm1241,,dialect
-MAMs,"ost = Southern Mam, esp. of Ostuncalco",mamm1241,,dialect
-MAMn,Northern Mam,mamm1241,,dialect
-MAMt,Tacana*,mamm1241,,dialect
-MAMo,Ostuncalco,mamm1241,,dialect
-MAMc,Cajola*,mamm1241,,dialect
-MAMi,San Idlefonso Ixtahuaca*n,mamm1241,,dialect
-MAM*,MAM,mamm1241,unclear which dialect,dialect
-TEK,Teko (Cuilquen*o),tekt1235,,language
-TEKmaz,Mazapa (de Madero),tekt1235,,dialect
-TEKama,Amatenango (de la Frontera),tekt1235,,dialect
-TEKtec,Tectita*n,tekt1235,,dialect
-IXL,Ixil,ixil1251,,language
-IXLne,Nebaj,ixil1253,,dialect
-IXLco,Cotzal,ixil1258,,dialect
-IXLch,Chajul,ixil1252,,dialect
-KCH,K'iche7 /k'iche7 ch'aab'al/,kich1262,,language
-KCHn,Nahuala*,kich1262,,dialect
-KCHq,Quiche*,kich1262,,dialect
-KCHc,Chichicastenango,kich1262,,dialect
-KCHk,Chicaj,kich1262,,dialect
-KCH*,KCH?,kich1262,unclear which dialect,dialect
-KCHa,KCH?,kich1262,unclear which dialect,dialect
-KCHp,KCH?,kich1262,unclear which dialect,dialect
-KAQ,Kaqchikeel,kaqc1270,,language
-KAQcol,Colonial Kaqchikeel,kaqc1270,,dialect
-ColKaq,KAQcol?,,Typo?,dialect
-KAQp,Patzu*n,kaqc1270,,dialect
-KAQc,Comalapa,kaqc1270,,dialect
-KAQt,Tecpa*n,kaqc1270,,dialect
-KAQi,KAQ?,kaqc1270,unclear which dialect,dialect
-KAQ*,KAQ?,kaqc1270,unclear which dialect,dialect
-PQM,Poqomam,poqo1253,,language
-PQMp,Pali*n,poqo1253,,dialect
-PQMj,San Lui*s Jilotepeque,poqo1253,,dialect
-QEQ,Q'eqchi7,kekc1242,,language
-QEQcob,Coba*n,kekc1242,,dialect
-QEQcha,(San Juan) Chamelco,kekc1242,,dialect
-QEQlan,Lanqui*n,kekc1242,,dialect
-QEQcah,Cahabo*n /k\'ajb\'om/,kekc1242,,dialect
-QEQw,"Western (Coba*n, Chamelco)",kekc1242,,dialect
-QEQe,Eastern (Lanqui*n and Cahabo*n),kekc1242,,dialect
-QEQl&c,Lanqui*n and Cahabo*n,kekc1242,,dialect
-QEQc&l,QEQl&c,kekc1242,,dialect
-QEQ*,QEQ?,kekc1242,unclear which dialect,dialect
-QEQw/e,QEQ?,kekc1242,presumably QEQw+QEQe,dialect
-KAB,"Kabil (""Chicomuselteco"")",chic1271,,language
-YUK,Yukateko /maHya/,yuca1254,,language
-YUK*,YUK?,yuca1254,unclear which dialect,dialect
+AKA,Akateko',west2635,,language
+AWA,Awakateko,agua1252,,language
+Chis,Chiapas,,private communication: Miguel Buitrago,diffusion zone?
+CHJ,Chuj,chuj1250,,language
+CHL,Ch\'ol,chol1282,,language
+CHR,Ch\'orti7,chor1273,,language
+CHT,Ch\'olti7 [col],chol1283,,language
 ColYUK,colonial Yukateko?,yuca1254,,dialect
-LAK,Lakantun,laca1243,,language
-ITZ,Itzaj,itza1241,,language
-MOP,Mopan,mopa1243,,language
 EpM,Epigraphic Mayan,epig1241,,language
 EpM(Ch),Ch?,,,dialect
 EpM(Yu),Yu?,,,dialect
-CHR,Ch\'orti7,chor1273,,language
-CHT,Ch\'olti7 [col],chol1283,,language
-CHL,Ch\'ol,chol1282,,language
-YOK,Yokot\'an (Chontal of Tabasco),taba1266,,language
+GLL,Greater Lowland = Yukatekan + Greater Tzeltalan,,,diffusion zone
+GLL+Hue,,,,
+GLL+pWa,,,,
+GLL+pWM,,,,
+Hue,"Huehuetenango = GQ (some or all, usually not Kotoke) + GM (some or all)",,,diffusion zone
+Hue+pEM,,,,
+Hue+pWM,,,,
+ITZ,Itzaj,itza1241,,language
+IXL,Ixil,ixil1251,,language
+IXLne,Nebaj,ixil1253,,dialect
+KAB,"Kabil (""Chicomuselteco"")",chic1271,,language
+KAQ,Kaqchikeel,kaqc1270,,language
+KAQc,Comalapa,kaqc1270,,dialect
+KAQcol,Colonial Kaqchikeel,kaqc1270,,dialect
+KAQi,KAQ?,kaqc1270,unclear which dialect,dialect
+KAQp,Patzu*n,kaqc1270,,dialect
+KCH,K'iche7 /k'iche7 ch'aab'al/,kich1262,,language
+KCHa,KCH?,kich1262,unclear which dialect,dialect
+KCHc,Chichicastenango,kich1262,,dialect
+KCHk,Chicaj,kich1262,,dialect
+KCHn,Nahuala*,kich1262,,dialect
+KCHp,KCH?,kich1262,unclear which dialect,dialect
+KCHq,Quiche*,kich1262,,dialect
+LAK,Lakantun,laca1243,,language
+LL,Lowland = Yukatekan + Cholan,,,diffusion zone
+LL+pGQ,,,,
+LL+pWa,,,,
+LL+pWM,,,,
+LL+WAS,,,,
+MAM,Mam /qyool/,mamm1241,,language
+MAMc,Cajola*,mamm1241,,dialect
+MAMi,San Idlefonso Ixtahuaca*n,mamm1241,,dialect
+MAMn,Northern Mam,mamm1241,,dialect
+MAMo,Ostuncalco,mamm1241,,dialect
+MAMs,"ost = Southern Mam, esp. of Ostuncalco",mamm1241,,dialect
+MAMt,Tacana*,mamm1241,,dialect
+MCH,"Mocho* /mo:cho7/ (""Motozintleco"")",moto1243,,language
+MOP,Mopan,mopa1243,,language
+Nawa,Nawa,,Some Nahuatl language,
+pCh,proto-Ch\'olan,chol1287,,proto language
+pChT,proto-Chujean (proto-Chuj-Tojol 7ab'al),chuj1249,,proto language
+PCH,Poqomchii7,poqo1254,,language
+PCHcri,San Cristo*bal Verapaz,poqo1254
+pCM,proto Central Mayan,,,proto language
+pEM,proto Eastern Mayan,,,proto language
+pEM+pGQ,,,,
+pEM+pWa,,,,
+pEM+pYu,,,,
+pGK,proto Greater K'iche'an,grea1276,UK + PQ,proto language
+pGK+pGQ,,,,
+pGK+pKp,,,,
+pGK+pYu,,,,
+pGM,proto Greater Mamean,grea1277,,proto language
+pGM+pGQ,,,,
+pGM+pWM,,,,
+pGQ,proto Greater Q'anjob'alan,kanj1261,Chujean + Qanjobal + Kotoke,proto language
+pGQ+pKp,,,,
+pGQ+pYu,,,,
+pGTz,proto Greater Tzeltalan,chol1286,Ch + Tz,proto language
+pGTz+pWa,,,,
+pIx,proto-Ixilan,ixil1250,,proto language
+pKAQ,,,In 'pre-KAQ',proto language
+pKo,proto-Kotoke /qato7k'/,,,proto language
+pKOT,,,In 'pre-KOT',proto language
+pKp,proto-K'iche'an Proper,,,proto language
+pM,proto-Mayan,maya1287,,proto language
+pMCH,,,In pre-MCH,proto language
+pMp,proto-Mamean Proper,mame1240,,proto language
+POP,Popti7,popt1235,,language
+pP,proto Poqom,poco1241,3 etyma with reflexes in PCH and PQM,proto language
+pP+pQ,,,,
+pPOQ,,,In pre-POQ,proto language
+pPQ,proto Poqom-Q'eqchi',,,proto language
+pQEQ,,,In pre-QEQ,proto language
+PQM,Poqomam,poqo1253,,language
+PQMj,San Lui*s Jilotepeque,poqo1253,,dialect
+PQMp,Pali*n,poqo1253,,dialect
+pQp,proto-Q'anjob'al Proper,,,proto language
+pSAK,,,In pre-SAK,
+pTOJ,,,In pre-TOJ
+pTZE,,,In pre-TZE
+pTzp,proto-Tzeltalan Proper,tzel1253,,proto language
+pTzp+pWa,,,,
+pTZU,,,In pre-TZU
+pUK,proto Uspanteko-K'iche'an,,,proto language
+pWa,proto-Wastekan,huas1241,,proto language
+pWa+pYu,,,,
+pWAS,pWa?,,Typo?,proto language
+pWM,proto Western Mayan,,,proto language
+pWM+pWa,,,,
+pWM+pWa+pYu,,,,
+pWM+pYu,,,,
+pYu,proto-Yukatekan,yuca1252,,proto language
+QAN,Q'anjob'al,qanj1241,,language
+QEQ,Q'eqchi7,kekc1242,,language
+QEQcah,Cahabo*n /k\'ajb\'om/,kekc1242,,dialect
+QEQcha,(San Juan) Chamelco,kekc1242,,dialect
+QEQe,Eastern (Lanqui*n and Cahabo*n),kekc1242,,dialect
+QEQlan,Lanqui*n,kekc1242,,dialect
+QEQw,"Western (Coba*n, Chamelco)",kekc1242,,dialect
+SAK,Sakapulteko,saca1238,,language
+SIP,Sipakapense,sipa1247,,language
+TEK,Teko (Cuilquen*o),tekt1235,,language
+TOJ,Tojol 7ab'al,tojo1241,,language
+TUZ,Tuzanteco /mu:chu7/,tuza1238,,language
+TZE,Tzeltal /b'atz'il k'op/,tzel1254,,language
+TZEb,TZE?,tzel1254,unclear which dialect,dialect
+TZEn,TZE?,tzel1254,unclear which dialect,dialect
+TZEs,TZE?,tzel1254,unclear which dialect,dialect
 TZO,Tzotzil /b\'atz\'i k\'op/,tzot1259,,language
 TZOs,TZO?,tzot1259,unclear which dialect,dialect
 TZOz,TZO?,tzot1259,unclear which dialect; Zinacanta*n /sotz'=leb'/?,dialect
-Tzo,TZO?,tzot1259,typo - missing uppercase?,language
-TZE,Tzeltal /b'atz'il k'op/,tzel1254,,language
-TZEn,TZE?,tzel1254,unclear which dialect,dialect
-TZEs,TZE?,tzel1254,unclear which dialect,dialect
-TZEb,TZE?,tzel1254,unclear which dialect,dialect
-TZE*,TZE?,tzel1254,,dialect
-Tze,TZE?',tzel1254,typo - missing uppercase?,language
-TOJ,Tojol 7ab'al,tojo1241,,language
-CHJ,Chuj,chuj1250,,language
-QAN,Q'anjob'al,qanj1241,,language
-AKA,Akateko',west2635,,language
-POP,Popti7,popt1235,,language
-MCH,"Mocho* /mo:cho7/ (""Motozintleco"")",moto1243,,language
-TUZ,Tuzanteco /mu:chu7/,tuza1238,,language
-AWA,Awakateko,agua1252,,language
-USP,Uspanteko (Musre*),uspa1245,,language
-SIP,Sipakapense,sipa1247,,language
-SAK,Sakapulteko,saca1238,,language
 TZU,Tz'utujiil,tzut1248,,language
-TZUped,San Pedro (La Laguna),tzut1248,,dialect
 TZUp,TZUped?,tzut1248,Typo?,dialect
-PCH,Poqomchii7,poqo1254,,language
-PCHcru,Santa Cruz,poqo1254
-PCHcri,San Cristo*bal Verapaz,poqo1254
-PCHtac,Tactic,poqo1254,,dialect
-PCHtam,Tamahu*,poqo1254,,dialect
-pM,proto-Mayan,maya1287,,proto language
-pWa,proto-Wastekan,huas1241,,proto language
-pWAS,pWa?,,Typo?,proto language
-pPQ,proto Poqom-Q'eqchi',,,proto language
-pEM,proto Eastern Mayan,,,proto language
-pGM,proto Greater Mamean,grea1277,,proto language
-pMp,proto-Mamean Proper,mame1240,,proto language
-pMAM,pMp?,,Typo for pMp?,proto language
-pIx,proto-Ixilan,ixil1250,,proto language
-pGQ,proto Greater Q'anjob'alan,,,proto language
-pChT,proto-Chujean (proto-Chuj-Tojol 7ab'al),,,proto language
-pYu,proto-Yukatekan,yuca1252,,proto language
-pYUK,pYu,yuca1252,Typo?,proto language
-pCM,proto Central Mayan,,,proto language
-pWM,proto Western Mayan,,,proto language
-pGTz,proto Greater Tzeltalan,,,proto language
-pCh,proto-Ch\'olan,chol1287,,proto language
-pTzp,proto-Tzeltalan Proper,,,proto language
-pQp,proto-Q'anjob'al Proper,,,proto language
-pKo,proto-Kotoke /qato7k'/,,,proto language
-pKp,proto-K'iche'an Proper,,,proto language
-CM,Central Mayan: WM + EM,,,major genetic grouping
-WM,Western Mayan: GTz + GQ,,,major genetic grouping
-EM,Eastern Mayan: GM + GK,,,major genetic grouping
-GTz,Ch + Tz,,,major genetic grouping
-GQ,Chujean + Qanjobal + Kotoke,,,major genetic grouping
-GM,Ix + Mp,,,major genetic grouping
-GK,UK + PQ,,,major genetic grouping
-LL,Lowland = Yukatekan + Cholan,,,diffusion zone
-GLL,Greater Lowland = Yukatekan + Greater Tzeltalan,,,diffusion zone
-Hue,"Huehuetenango = GQ (some or all, usually not Kotoke) + GM (some or all)",,,diffusion zone
-Chis,Chiapas,,private communication: Miguel Buitrago,diffusion zone?
-pGK,proto Greater K'iche'an,,,proto language
-pUK,proto Uspanteko-K'iche'an,,,proto language
-Kp,pKp?,,Proto-language identifier missing p-prefix?,proto language
-Mp,pMp?,,Proto-language identifier missing p-prefix?,proto language
-Qp,pQp?,,Proto-language identifier missing p-prefix?,proto language
-UK,pUK?,,Proto-language identifier missing p-prefix?,proto language
-Yu,pYu?,,Proto-language identifier missing p-prefix?,proto language
-Tz,pTzp?,,Proto-language identifier missing p-prefix?,proto language
-Tzp,pTzp?,,Proto-language identifier missing p-prefix?,proto language
-pQa,pGQ?,,,proto language
-M,pM?,,Proto-language identifier missing p-prefix?,proto language
-pM?,pM?,,,proto language
-POQ,pPQ?,,,proto language
-pChl,pCh?,,,proto language
-eGK,pGK?,,,proto language
-PQ,pPQ?,,,proto language
-TCh,pChT?,,,proto language
-I,pIx?,,,proto language
-pI,pIx?,,,proto language
-pTz,pGTz?,,,proto language
-pQ,?,,pQ+P,proto language
-P,?,,pQ+P,proto language
-Poqom,?,,pre-Poqom,proto language
-Q,?,,kP+Q
-QK,?,,QK+
-Ch,pCh?,
-Nawa,Non-Mayan language',
-KOT,?',,In 'pre-KOT'
-NEG,?',,
-eKP,?',,
-Ip,?',,
-Ch'olan,?,,In 'pre-Ch'olan'
+USP,Uspanteko (Musre*),uspa1245,,language
+WAS,Wasteko /teenek/,huas1242,,language
+WASc,Central (Tantoyuca),huas1242,,dialect
+WASw,Western (Tancanhuitz),huas1242,,dialect
+YOK,Yokot\'an (Chontal of Tabasco),taba1266,,language
+YUK,Yukateko /maHya/,yuca1254,,language

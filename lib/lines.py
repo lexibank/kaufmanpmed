@@ -3,6 +3,87 @@ import itertools
 import dataclasses
 
 LINES = {
+    "NEG *tyaam":  # negated form following after non-negated.
+        "pM *NEG tyaam",
+    # Prevent parsing of "light" as atomic gloss:
+    "Was+WM *7ut     vt           to do it (`light' generic transitive verb); to say it":
+        "Was+WM *7ut     vt           to do it (light generic transitive verb); to say it",
+    # Re-order reconstruction and gloss:
+    "pM \"HAND of QUERN\" = muller; *u-q'ab' kaa7":
+        "pM *u-q'ab' kaa7  \"HAND of QUERN\" = muller",
+    "EM+GQ \"SHIT of LOUSE\" = `nit'; pM *u-tzaa7 7uk'":
+        "pM *u-tzaa7 7uk'  \"SHIT of LOUSE\" = `nit'",
+    "GK \"THORN POSSUM\" = `sticker bear, porkypine'; Kp *ki7x-a huhty'":
+        "GK+Kp *ki7x-a huhty'  \"THORN POSSUM\" = `sticker bear, porkypine'",
+    "EM+GQ \"FLOWER of WINTER.SQUASH\", *u-xum.a7k(-iil) q'ohq'":
+        "EM+GQ *u-xum.a7k(-iil) q'ohq'  \"FLOWER of WINTER.SQUASH\"",
+    "CM \"ARM of TREE\" = branch; *u-q'ab' (tyee7)":
+        "CM *u-q'ab' (tyee7)  \"ARM of TREE\" = branch",
+    "GQ \"MAIZE of FOOT\" = toe; *r-ixi7m-aal FOOT":
+        "GQ *r-ixi7m-aal FOOT  \"MAIZE of FOOT\" = toe",
+    "EM \"FACE of KNEE\" = shin'; *u-Haty ty'ehk":
+        "EM *u-Haty ty'ehk  \"FACE of KNEE\" = `shin'",
+    "LL+WM \"BONE of FACE\" = skull; *u-b'aaq-eel ERG-Haty":
+        "LL+WM *u-b'aaq-eel ERG-Haty  \"BONE of FACE\" = skull",
+    "EM+ \"PIP of FACE\" = eye, *b'aq' Haty":
+        "EM+ *b'aq' Haty  \"PIP of FACE\" = eye",
+    "\"MAIZE of HAND\" = finger; GQ *r-ixi7m-aal ERG-q'ab'":
+        "GQ *r-ixi7m-aal ERG-q'ab'  \"MAIZE of HAND\" = finger",
+    '"EXIT of SUN" = `east\' *r-el.e.b\'.aal q\'iinh':
+        '*r-el.e.b\'.aal q\'iinh  "EXIT of SUN" = `east\'',
+    "BONE of HEAD = `skull'; *b'aaq-eel jool.oom":  # introduces a duplicate!
+        "CM *b'aaq-eel jool.oom  \"BONE of HEAD\" = `skull'",
+    # Turn alternative readings into comments:
+    "pM (or pCh+) *7anaam [maybe (probably) a loan from Yokot'an to Wasteko]":
+        "pM [or pCh+] *7anaam [maybe (probably) a loan from Yokot'an to Wasteko]",
+    "EM+ *patz (cf. Nawa pach-tli)":
+        "EM+ *patz [cf. Nawa pach-tli]",
+    "MAM /naayaj/ from Soke *7anh=naji7":
+        "MAM /naayaj/ [from Soke *7anh=naji7]",
+    "GM+ *naq' (passive)":
+        "GM+ *naq' [passive]",
+    "Chis *k'anal [no *nh, maybe *q'] < **q'an.aal":
+        "Chis *k'anal [no *nh, maybe *q'] [< **q'an.aal]",
+    "GLL? #k'uk'um   `feather' < **q'u7q'":
+        "GLL? #k'uk'um   `feather' [< **q'u7q']",
+    "#kut(u) from Nawa /koto/":
+        "#kut(u) [from Nawa /koto/]",
+    "pM *t'iiw    `hawk' [+ TK 1978 14.] OR *t'ihw":
+        "pM *t'iiw    `hawk' [+ TK 1978 14.] [OR *t'ihw]",
+    "Hue *HEAD of MOUNTAIN `summit'; Hue *wi7 witz":
+        "Hue *wi7 witz \"HEAD of MOUNTAIN\" = `summit'",
+    "Hue *chum    ~ GK *chom":
+        "Hue *chum    [~ GK *chom]",
+    "GLL *tahb'     `20'     [TK 1978 7a])":
+        "GLL *tahb'     `20'     [TK 1978 7a]",
+    "Kp to FEEL it [as] GOOD *7utz na7":
+        "Kp *7utz na7 \"to FEEL it [as] GOOD\"",
+    "EM+ Hue #mo7otz [diffused]":
+        "EM+Hue #mo7otz [diffused]",
+    "Mp GO.OUT.AWAY SUN":
+        "Mp \"GO.OUT.AWAY SUN\"",
+    "Hue (GQ+GM) *7ix=7ajaaw":
+        "Hue *7ix=7ajaaw",
+    "pM (EM+Q) *ko7k' `tiny' [+ TK 1978 11b.c]":
+        "pM *ko7k' `tiny' [+ TK 1978 11b.c]",
+    "eGK (CM?) *yenh":
+        "pGK *yenh",
+    "pCM *tuus      s     flor de muerto // marigold [Tagetes electa]":
+        "pCM *tuus      s     flor de muerto // marigold (Tagetes electa)",
+    "Kp //*7i7h.a.oom// > *7i7hoom":
+        "Kp /*7i7h.a.oom/ > *7i7hoom",
+    "pGK *IT WORKS = `it is useful'":
+        "pGK \"IT WORKS\" = `it is useful'",
+    "CM *kaan `snake' = `cramp'":
+        "CM *kaan \"snake\" = `cramp'",
+    "CM *GREEN STONE = `river rock'":
+        "CM \"GREEN STONE\" = `river rock'",
+    "CM #mis [varied forms] (origin unclear; maybe from Nawa mis-tli)":
+        "CM #mis [varied forms] [origin unclear; maybe from Nawa mis-tli]",
+    "pM *t'in   `to hit' [TK 1978 14.19a] (cf. pM *t'in `taut')":
+        "pM *t'in   `to hit' [TK 1978 14.19a] [cf. pM *t'in `taut']",
+    "EM *t'in    `fatly stretched out' [TK 1978 14.19b] (see pM *t'in `taut']":
+        "EM *t'in    `fatly stretched out' [TK 1978 14.19b] [see pM *t'in `taut']",
     # Comment that relates to semantic field as a whole - just ignore:
     '               [these and more are found in TK "MCS"]': '',
     # Missing closing ]:
@@ -14,6 +95,12 @@ LINES = {
     '[could be "earth is his leg", but cf. MAR 7us+7u w@s                  "earthquake\'s twoness]"':
         '[could be "earth is his leg", but cf. MAR 7us+7u w@s                  "earthquake\'s twoness"]',
     # Comments:
+    "GLL *t'u7l (pM *t'ul) `rabbit' [TK 1978 14.15] (Classic Mayan innovation?)":
+        "GLL *t'u7l (pM *t'ul) `rabbit' [TK 1978 14.15] [Classic Mayan innovation?]",
+    "GLL *t'ox   `to split' [+ TK 1978 14.16] (Classic Mayan innovation?)":
+        "GLL *t'ox   `to split' [+ TK 1978 14.16] [Classic Mayan innovation?]",
+    "pM *t'ib'    `on all fours' [TK 1978 14.17] (Classic Mayan innovation?)":
+        "pM *t'ib'    `on all fours' [TK 1978 14.17] [Classic Mayan innovation?]",
     'LOAN':
         '[LOAN]',
     'NOT IN KOT':
@@ -37,14 +124,12 @@ LINES = {
     "wol-VC   aj < P":
         "[wol-VC   aj < P]",
     # Misplaced protoform marker:
+    "pYu wich'":
+        "pYu *wich'",
     "EM* k'ul.b'a7":
         "EM *k'ul.b'a7",
     "MAYBE pM *xil ~ GLL *xel":
         "pM *xil ~ GLL *xel\n[MAYBE]",
-    '"EXIT of SUN" = `east\' *r-el.e.b\'.aal q\'iinh':
-        '"EXIT of SUN" = `east\'\n*r-el.e.b\'.aal q\'iinh',
-    "BONE of HEAD = `skull'; *b'aaq-eel jool.oom":
-        "BONE of HEAD = `skull'\n*b'aaq-eel jool.oom",
     # Missing protoform marker:
     "ABS-ERG-mutz'-INFL ERG-Haty":
         "*ABS-ERG-mutz'-INFL ERG-Haty",
@@ -181,8 +266,8 @@ def iter_fixed_lines(lines):
         if line is None:
             continue
 
-        line = line.replace('ANALYZE', '')  # Remove internal comment.
-        line = LINES.get(line, line)
+        line = line.replace('ANALYZE', '').replace('*//tu7l-ul//', '*/tu7l-ul/')  # Remove internal comment.
+        line = LINES.get(line, line).replace('eGK', 'pGK')
         for ll in line.split('\n'):
             yield ll, page, lineno
 
