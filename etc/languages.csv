@@ -24,10 +24,10 @@ KAB,"Kabil (""Chicomuselteco"")",chic1271,,language
 KAQ,Kaqchikeel,kaqc1270,,language
 KAQc,Comalapa,kaqc1270,,dialect
 KAQcol,Colonial Kaqchikeel,kaqc1270,,dialect
-KAQi,KAQ?,kaqc1270,unclear which dialect,dialect
+KAQi,San Andres Itzapa,kaqc1270,possibly San Andres Itzapa,dialect
 KAQp,Patzu*n,kaqc1270,,dialect
 KCH,K'iche7 /k'iche7 ch'aab'al/,kich1262,,language
-KCHa,KCH?,kich1262,unclear which dialect,dialect
+KCHa,Achi,kich1262,Achi doesn't otherwise show up in the list and is considered either ist own language or a dialect of K'iche',dialect
 KCHc,Chichicastenango,kich1262,,dialect
 KCHk,Chicaj,kich1262,,dialect
 KCHn,Nahuala*,kich1262,,dialect
@@ -97,7 +97,7 @@ pTZU,,,In pre-TZU,
 pUK,proto Uspanteko-K'iche'an,,,proto language
 pWa,proto-Wastekan,huas1241,,proto language
 pWa+pYu,,,,
-pWAS,pWa?,,Typo?,proto language
+pWAS,proto-Wasteko,,,proto language
 pWM,proto Western Mayan,,,proto language
 pWM+pWa,,,,
 pWM+pWa+pYu,,,,
@@ -116,12 +116,12 @@ TEK,Teko (Cuilquen*o),tekt1235,,language
 TOJ,Tojol 7ab'al,tojo1241,,language
 TUZ,Tuzanteco /mu:chu7/,tuza1238,,language
 TZE,Tzeltal /b'atz'il k'op/,tzel1254,,language
-TZEb,TZE?,tzel1254,unclear which dialect,dialect
+TZEb,Bachajón,tzel1254,"Bachajón (again, an important dialect that is phonologically conservative. The one form that we have in PMED is also conservative, so I'm relatively confident)",dialect
 TZEn,TZE?,tzel1254,unclear which dialect,dialect
 TZEs,TZE?,tzel1254,unclear which dialect,dialect
 TZO,Tzotzil /b\'atz\'i k\'op/,tzot1259,,language
-TZOs,TZO?,tzot1259,unclear which dialect,dialect
-TZOz,TZO?,tzot1259,unclear which dialect; Zinacanta*n /sotz'=leb'/?,dialect
+TZOs,San Bartolo,tzot1259,"San Bartolo? (Kaufman 1972 El proto-tzeltal-tzotzil, p. 17, 19)",dialect
+TZOz,Zinacantan,tzot1259,Pretty sure it's the dialect of Zinacantan; Zinacanta*n /sotz'=leb'/?,dialect
 TZU,Tz'utujiil,tzut1248,,language
 TZUp,TZUped?,tzut1248,Typo?,dialect
 USP,Uspanteko (Musre*),uspa1245,,language

@@ -2,6 +2,20 @@ import re
 import itertools
 import dataclasses
 
+BLOCKS = {
+    """\
+     EpM(Ch)   <RED-ch'o-ko> /chak=ch'ok/                             infant
+     EpM(Ch)   <ch'o-ko> /ch'ok/                                      child, sprout; young, unripe
+     EpM(Ch)   <ch'o-ko-le> /ch'oklel/                                youth
+GTz *ch'ok ?< **ch'oq
+""": """\
+GTz *ch'ok ?< **ch'oq
+     EpM(Ch)   <RED-ch'o-ko> /chak=ch'ok/                             infant
+     EpM(Ch)   <ch'o-ko> /ch'ok/                                      child, sprout; young, unripe
+     EpM(Ch)   <ch'o-ko-le> /ch'oklel/                                youth
+    """
+}
+
 LINES = {
     "NEG *tyaam":  # negated form following after non-negated.
         "pM *NEG tyaam",
@@ -144,6 +158,12 @@ LINES = {
         "       YUK     #kanan    /k'a:n 7an/                   s              ?\"precious herb\" yerba o mata que llaman",
     "      YUK      #tuchhub    [from Ch'olan]              s              dedo //                                  [m]":
         "      YUK      #tuchhub [from Ch'olan]              s              dedo //                                  [m]",
+    "      TUZ     tza7.a-:n                                   vi:antip       cagar   [ETR][ERH] //                   [TK67-68]":
+        "      TUZ     tza7.a-:n                                   vi:antip       cagar [ETR][ERH] //                   [TK67-68]",
+    "     YUK      koj                                      s              //j// (m)         leo*n // cougar   [mq]":
+        "     YUK      koj                                      s              //j// (m); leo*n // cougar   [mq]",
+    "    EpM (Ch) <yu-ta> /y-u:t/, <yu-ta-la> /y-u:t-a:l/":
+        "    EpM(Ch) <yu-ta> /y-u:t/, <yu-ta-la> /y-u:t-a:l/",
     # Missing language abbreviation:
     # CHR:
     "            k'iHn.aj, k'iHn.al, k'iHn.k'in.al  aj                       luke-warm, tepid":
@@ -170,9 +190,17 @@ LINES = {
 }
 
 
+def fix_blocks(text):
+    for k, v in BLOCKS.items():
+        assert k in text
+        text = text.replace(k, v)
+    return text
+
+
 @dataclasses.dataclass
 class ContinuationLines:
     lines: list[str]
+    concatenated: str = None
     matched: list[int] = dataclasses.field(default_factory=list)
 
     @property
@@ -187,6 +215,8 @@ class ContinuationLines:
                 self.matched.append(i)
                 if i == 0:  # Matches the first line, return concatenation of all lines.
                     assert self.matched == [0]
+                    if self.concatenated:
+                        return self.concatenated, True
                     return l + ' ' + ' '.join(self.lines[1:]), True
                 return None, True
         return line, False
@@ -252,6 +282,13 @@ CONTINUATION_LINES = [
         "     EpM (Ch) <yu-ta> /y-u:t/, <yu-ta-la> /y-u:t-a:l/",
         "                                              s                       ?food",
     ]),
+    ContinuationLines(
+        [
+            "      TZO       ta ERG-ich-on, 7ich-on-il               rn             in front of N, opposite N, on the front   [rml]",
+            "                                                                          side of N",
+        ],
+        concatenated="      TZO       ta ERG-ich-on, 7ich-on-il               rn             in front of N, opposite N, on the front side of N  [rml]"
+    )
 ]
 
 

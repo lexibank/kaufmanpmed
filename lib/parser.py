@@ -15,14 +15,13 @@ on Mayan historical linguistics, however, was established by Terrence Kaufman, a
 > the default model of genetic relations among Mayan languages for nearly half a century.
 
 """
-import itertools
 import re
 import pathlib
 import functools
 import dataclasses
 
 from .languoids import match_languoids
-from .lines import iter_lines
+from .lines import iter_lines, fix_blocks
 
 """
 Since the etymologies (or cognate sets) are listed by semantic field,
@@ -66,6 +65,9 @@ class Gloss:
         sp, _, en = s.partition('//')
         return cls(sp.strip() or None, en.strip() or None)
 
+    def __str__(self):
+        return '{} // {}'.format(self.spanish or '', self.english or '')
+
 
 @dataclasses.dataclass
 class Reflex:
@@ -77,32 +79,66 @@ class Reflex:
     pos: str = None
     orig_lang: str = None
 
+    def __str__(self):
+        return '    {}{}\t{}\t{}\t{}'.format(
+            self.lang,
+            '[{}]'.format(self.orig_lang) if self.orig_lang else '',
+            self.form or '',
+            self.pos or '',
+            self.gloss,
+        )
+
     @classmethod
     def from_line(cls, line):
-        try:
-            lang, line = line.split(None, maxsplit=1)
-        except:
-            lang = line
+        #
+        # FIXME: Normalize line!
+        # vt:idiomatic {.b'e7} pulsearlo [ERH],,SEE,,
+        # vt:indir/instr (a)puntar [rifle] [ERH],,MEASURE,,
+        # aj (adv?) temprano [ETR],,EARLY,,
+        line = line.replace("(+ dir)[d]estirar", "(+ dir)[d]estirar")
+        line = line.replace("vt (instr)ma", "vt (instr)  ma")
+
+        linen = re.sub(
+            r'(?P<pos>T|vt|vi|aj)\s*\(?\+\s*(?P<qual>[a-z]+)\)?\s//',
+            lambda m: '{} + {}  //'.format(m.group('pos'), m.group('qual')),
+            line)
+        linen = re.sub(
+            r'(?P<pos>T|vt|vi|aj)\s*\(?\+\s*(?P<qual>[a-z]+)\)?\s(?P<gloss>[a-z])',
+            lambda m: '{} + {}  {}'.format(m.group('pos'), m.group('qual'), m.group('gloss')),
+            linen)
+        linen = re.sub(
+            r'(?P<pos>T|vt|vi|aj):(?P<qual>[a-z/]+)\s(?P<add>\{.b\'e7}\s)?(?P<gloss>[a-z(])',
+            lambda m: '{}:{} {}  {}'.format(m.group('pos'), m.group('qual'), m.group('add') or '', m.group('gloss')),
+            linen)
+        if linen != line:
+            #print(line)
+            line = linen
+
+        #
+        # Parse the language specification:
+        lang, line = line.split(None, maxsplit=1) if re.search(r'\s', line) else (line, '')
         lang, orig_lang = match_languoids(lang)
-        assert len(lang) == 1
+        assert len(lang) == 1, 'reflexes must be assigned to a single variety'
         lang = lang[0]
 
+        # Parse the source:
         source = re.search('\s*\[(?P<source>[a-zA-Z0-9\-& ():*,#.?]+)]$', line)
         if source:
             line = line[:source.start()].strip()
             source = source.group('source')
 
         if re.match(r'#[a-z\-]+\s+/', line):
+            # Normalize whitespace between protoform and remainder.
             line = '{} {}'.format(*line.split(None, maxsplit=1))
 
         form, pos, gloss, comment = None, None, None, None
         comps = re.split(r'\s\s+', re.sub(r'//\s\s+', '// ', line))
-        if len(comps) == 3:
-            form, pos, gloss = comps
-            if pos.startswith('/') and pos.endswith('/'):
+        if len(comps) == 3:  # 3 multi-space separated "columns".
+            form, pos, gloss = comps  # We assume these are form, PoS and gloss ...
+            if pos.startswith('/') and pos.endswith('/'):  # ... unless PoS is part of the form ...
                 form += ' {}'.format(pos)
                 pos = None
-            elif pos.startswith('[') and pos.endswith(']'):
+            elif pos.startswith('[') and pos.endswith(']'):  # ... or a comment.
                 comment = pos[1:-1].strip()
                 pos = None
         elif len(comps) == 2:
@@ -110,11 +146,10 @@ class Reflex:
         elif len(comps) == 1:
             form = comps[0]
         else:
-            #
-            # FIXME!
-            #
-            pass
-            #print(line)
+            raise ValueError(line)
+
+        if gloss and ':' in gloss:
+            print(gloss)
 
         return cls(
             lang,
@@ -127,27 +162,10 @@ class Reflex:
         )
 
 
-def iter_witness(lines):
-    witness = None
-    for i, line in enumerate(lines):
-        line = line.strip()
-        if not line:
-            continue
-        if line.startswith('['):  # a comment
-            assert witness, line
-            witness.comment = line[1:-1].strip()
-        else:
-            if witness:
-                yield witness
-            witness = Reflex.from_line(line)
-    if witness:
-        yield witness
-
-
 class Dictionary:
     def __init__(self, p):
         p = pathlib.Path(p)
-        self.full_lines = list(iter_lines(p.read_text(encoding='utf8').split('\n')))
+        self.full_lines = list(iter_lines(fix_blocks(p.read_text(encoding='utf8')).split('\n')))
         self.lines = [l[0] for l in self.full_lines]
         self.semantic_fields = []
         last_sf = None
@@ -161,14 +179,19 @@ class Dictionary:
                 last_sf = sf
 
     def __getitem__(self, item):
+        if isinstance(item, int):
+            return [etymon for etymon in self._iter_etyma() if etymon.page == item]
         for sf in self.semantic_fields:
             if sf.main == item or (sf.sub and sf.sub == item):
                 return sf
-        for sf in self.semantic_fields:
-            for etymon in sf.etyma:
-                if etymon.protoform and item in etymon.protoform:
-                    return etymon
+        for etymon in self._iter_etyma():
+            if etymon.protoform and item in etymon.protoform:
+                return etymon
         raise KeyError(item)
+
+    def _iter_etyma(self):
+        for sf in self.semantic_fields:
+            yield from sf.etyma
 
     @staticmethod
     def _iter_semantic_fields(lines):
@@ -216,10 +239,26 @@ class SemanticField:
 
     @functools.cached_property
     def etyma(self):
+        def iter_reflexes(lines):
+            witness = None
+            for i, line in enumerate(lines):
+                line = line.strip()
+                if not line:
+                    continue
+                if line.startswith('['):  # Comments are assigned to the preceding reflex.
+                    assert witness, line
+                    witness.comment = line[1:-1].strip()
+                else:
+                    if witness:
+                        yield witness
+                    witness = Reflex.from_line(line)
+            if witness:
+                yield witness
+
         res = []
         for concept, protoform, witnesses, comments, page, line in iter_etyma(
                 self.lines, self.main, self.sub):
-            witnesses = list(iter_witness(witnesses))
+            witnesses = list(iter_reflexes(witnesses))
             res.append(Etymon.from_data(concept, protoform, witnesses, comments, page, line))
         return res
 
@@ -233,6 +272,13 @@ class Protoform:
     comment: str = None
     number: str = None
     orig_lang: str = None
+
+    def __str__(self):
+        return '{}{}\t{}'.format(
+            self.lang,
+            '[{}]'.format(self.orig_lang) if self.orig_lang else '',
+            self.form,
+        )
 
     @classmethod
     def from_line(cls, protoform):
@@ -362,12 +408,13 @@ class Etymon:
         return cls(concept, protoform, witnesses, comments, page, line)
 
     def __str__(self):
-        res = [self.protoform]
+        res = []
         if self.concept:
             res.append('%% {} %%'.format(self.concept.name))
+        res = [str(self.protoform) or '-']
         for w in self.reflexes:
             res.append('    {}'.format(w))
-        return '\n'.join(res)
+        return '\n'.join(res + [''])
 
 
 def iter_etyma(lines, main, sub, rootid=0):
