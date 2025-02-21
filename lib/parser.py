@@ -62,11 +62,16 @@ class Gloss:
 
     @classmethod
     def from_string(cls, s):
+        etrerh = re.compile(r'\s*\[E(TR|RH)(,-?E(TR|RH))*]')
+        s = etrerh.sub('', s)
+        # FIXME: must recognize:
         sp, _, en = s.partition('//')
-        return cls(sp.strip() or None, en.strip() or None)
+        res = cls(sp.strip() or None, en.strip() or None)
+        assert (s.strip() == '//') or res.spanish or res.english, s
+        return res
 
     def __str__(self):
-        return '{} // {}'.format(self.spanish or '', self.english or '')
+        return '{}//{}'.format(self.spanish or '', self.english or '')
 
 
 @dataclasses.dataclass
@@ -90,10 +95,7 @@ class Reflex:
 
     @classmethod
     def from_line(cls, line):
-        #
-        # FIXME: Normalize line!
-        # vt:idiomatic {.b'e7} pulsearlo [ERH],,SEE,,
-        # vt:indir/instr (a)puntar [rifle] [ERH],,MEASURE,,
+        # Normalize line!
         # aj (adv?) temprano [ETR],,EARLY,,
         line = line.replace("(+ dir)[d]estirar", "(+ dir)[d]estirar")
         line = line.replace("vt (instr)ma", "vt (instr)  ma")
@@ -111,10 +113,8 @@ class Reflex:
             lambda m: '{}:{} {}  {}'.format(m.group('pos'), m.group('qual'), m.group('add') or '', m.group('gloss')),
             linen)
         if linen != line:
-            #print(line)
             line = linen
 
-        #
         # Parse the language specification:
         lang, line = line.split(None, maxsplit=1) if re.search(r'\s', line) else (line, '')
         lang, orig_lang = match_languoids(lang)
@@ -122,7 +122,7 @@ class Reflex:
         lang = lang[0]
 
         # Parse the source:
-        source = re.search('\s*\[(?P<source>[a-zA-Z0-9\-& ():*,#.?]+)]$', line)
+        source = re.search(r'\s*\[(?P<source>[a-zA-Z0-9\-& ():*,#.?]+)]$', line)
         if source:
             line = line[:source.start()].strip()
             source = source.group('source')
@@ -147,9 +147,6 @@ class Reflex:
             form = comps[0]
         else:
             raise ValueError(line)
-
-        if gloss and ':' in gloss:
-            print(gloss)
 
         return cls(
             lang,
@@ -237,6 +234,30 @@ class SemanticField:
     sub: str
     lines: list
 
+    def iter_concepts(self):
+        """
+        > sets of entries that have the same or semantically related gloss are bounded by xxxxx
+        """
+        concept_pattern = re.compile(
+            r'(?P<name>[A-Z0-9,./\-; ]+)(\((?P<species>[A-Za-z. ]+)\))?(\[(?P<comment>[^]]+)])?')
+        concept, lines = None, []
+        for line, page, lineno in self.lines:
+            if line.startswith('xxxx'):
+                if lines:
+                    yield concept, lines
+                concept, lines = None, []
+                continue
+            if line.startswith('        '):
+                match = concept_pattern.fullmatch(line.strip())
+                if match:
+                    assert not [l for l, _, _ in lines if l.strip()], (
+                        'non-empty lines before concept {}'.format(line.strip()))
+                    concept = Concept(**match.groupdict())
+                    continue
+            lines.append((line, page, lineno))
+        assert lines
+        yield concept, lines
+
     @functools.cached_property
     def etyma(self):
         def iter_reflexes(lines):
@@ -256,10 +277,10 @@ class SemanticField:
                 yield witness
 
         res = []
-        for concept, protoform, witnesses, comments, page, line in iter_etyma(
-                self.lines, self.main, self.sub):
-            witnesses = list(iter_reflexes(witnesses))
-            res.append(Etymon.from_data(concept, protoform, witnesses, comments, page, line))
+        for concept, lines in self.iter_concepts():
+            for concept, protoform, witnesses, comments, page, line in iter_etyma(lines):
+                witnesses = list(iter_reflexes(witnesses))
+                res.append(Etymon.from_data(concept, protoform, witnesses, comments, page, line))
         return res
 
 
@@ -267,7 +288,7 @@ class SemanticField:
 class Protoform:
     lang: str
     form: str
-    gloss: str
+    gloss: Gloss
     pos: str = None
     comment: str = None
     number: str = None
@@ -372,20 +393,21 @@ class Protoform:
                 else:
                     gloss.append(ss)
 
-        clean_gloss = []
-        for gl in gloss:
-            gl = gl.strip()
-            if gl:
-                if '//' in gl:
-                    es, _, en = gl.partition('//')
-                    if es.strip():
-                        clean_gloss.append('{} [es]'.format(es.strip()))
-                    if en.strip():
-                        clean_gloss.append('{} [en]'.format(en.strip()))
-                else:
-                    clean_gloss.append(gl)
+        gloss = Gloss.from_string('; '.join(gloss)) if '; '.join(gloss).strip() else None
+        #clean_gloss = []
+        #for gl in gloss:
+        #    gl = gl.strip()
+        #    if gl:
+        #        if '//' in gl:
+        #            es, _, en = gl.partition('//')
+        #            if es.strip():
+        #                clean_gloss.append('{} [es]'.format(es.strip()))
+        #            if en.strip():
+        #                clean_gloss.append('{} [en]'.format(en.strip()))
+        #        else:
+        #            clean_gloss.append(gl)
 
-        gloss = '; '.join(clean_gloss)
+        #gloss = '; '.join(clean_gloss)
         return cls(langspec, protoform, gloss, pos, '; '.join(comment), number, orig_lang=orig)
 
 
@@ -403,7 +425,7 @@ class Etymon:
         if protoform:
             protoform = Protoform.from_line(protoform)
             if protoform.gloss and not concept:
-                concept = Concept(protoform.gloss)
+                concept = Concept(str(protoform.gloss))
 
         return cls(concept, protoform, witnesses, comments, page, line)
 
@@ -417,7 +439,7 @@ class Etymon:
         return '\n'.join(res + [''])
 
 
-def iter_etyma(lines, main, sub, rootid=0):
+def iter_etyma(lines, rootid=0):
     """
 [A-Z0-9,./-;]
 
@@ -428,15 +450,15 @@ def iter_etyma(lines, main, sub, rootid=0):
     #    print('    ' + sub)
     #else:
     #    print(main)
-    concept_pattern = re.compile(
-        r'(?P<name>[A-Z0-9,./\-; ]+)(\((?P<species>[A-Za-z. ]+)\))?(\[(?P<comment>[^]]+)])?')
+    # FIXME: the following is merely a gloss for a reconstruction, not the "current" concept.
+    # "..." = ...
     concept_and_reconstruction_pattern = re.compile(
         r'(?P<name>\"[^"]+\"(\s+=[^;,(]+)?)(\((?P<species>[A-Za-z. ]+)\))?(?P<sep>[;,]).*')
 
     #
     # FIXME: handle multiple comments per reconstruction, look for "following form"!
     #
-    protoform, witnesses, concept, comments = None, [], None, []
+    protoform, witnesses, concept, comments, cfwitnesses, cf = None, [], None, [], [], False
     start_page, start_lineno = None, None
 
     for line, page, lineno in lines:
@@ -445,77 +467,66 @@ def iter_etyma(lines, main, sub, rootid=0):
         if start_lineno is None:
             start_lineno = lineno
 
-        if line.startswith('          '):
-            m = concept_pattern.fullmatch(line.strip())
-            if m:
-                concept = Concept(**m.groupdict())
-                continue
-
-        if re.fullmatch(r'xxxxxxx[x]+', line.strip()):
-            if witnesses:
-                yield concept, protoform, witnesses, comments, start_page, start_lineno
-            start_lineno, start_page = lineno, page
-            protoform, witnesses, concept, comments = None, [], None, []
-            continue
-
         if re.fullmatch(r'=====[=]+', line.strip()):
             if witnesses:
                 yield concept, protoform, witnesses, comments, start_page, start_lineno
             start_lineno, start_page = lineno, page
-            protoform, witnesses, comments = None, [], []
+            protoform, witnesses, comments, cfwitnesses, cf = None, [], [], [], False
             rootid += 1
             continue
 
         if line.startswith('    '):  # a witness line
-            if line.strip().startswith('['):  # a witness comment
-                assert line.strip().endswith(']'), line
+            if cf:
+                cfwitnesses.append(line)
             else:
-                langs, _ = match_languoids(line.strip().split()[0])
-                assert langs and len(langs) == 1, line.strip()
-            witnesses.append(line)
-        else:  # A line with no leading whitespace, presumably a reconstruction.
-            if not line.strip():
-                continue
+                if line.strip().startswith('['):  # a witness comment
+                    assert line.strip().endswith(']'), line
+                else:
+                    langs, _ = match_languoids(line.strip().split()[0])
+                    assert langs and len(langs) == 1, line.strip()
+                witnesses.append(line)
+            continue
 
-            if concept_and_reconstruction_pattern.match(line):
-                m = concept_and_reconstruction_pattern.match(line)
-                concept = Concept(name=m.group('name'), species=m.group('species'))
-                line = line.partition(m.group('sep'))[2].strip()
+        if not line.strip():
+            continue
 
-            if match_languoids(line.split()[0]):  # an etymon with an identified proto-language.
-                if witnesses:
-                    yield concept, protoform, witnesses, comments, start_page, start_lineno
-                    # Concept is not reset!
-                start_lineno, start_page = lineno, page
-                witnesses, comments = [], []
-                protoform = line
-            elif line.startswith('*') or line.startswith('#'):
-                # just a reconstruction without identified proto-language
-                if witnesses:
-                    yield concept, protoform, witnesses, comments, start_page, start_lineno
-                start_lineno, start_page = lineno, page
-                witnesses, comments = [], []
-                protoform = line
-            elif line.startswith('['):
-                assert line.endswith(']')
-                comments.append(line[1:-1].strip())
-            elif line.startswith('cf. '):  # a "see also" witness
-                pass
-            elif line == 'cf.':
-                #
-                # FIXME: introduces a group of "see also" witnesses!
-                #
-                pass
-            elif line.startswith('?  '):  # dubious witness
-                #
-                # FIXME: handle!
-                #
-                pass
-            else:
-                # its to (in)
-                m = re.fullmatch(r'"?([A-Z0-9]+|to)(\s+([A-Z\-0-9]+|its|of|to|\(in\)|\+))*"?(\s+(=\s+)?`?[a-z/, ]+\'?)?', line)
-                assert len(line) > 5 and m, '{}: {}'.format(lineno, line)
-                concept = Concept(name=line)
+        # A line with no leading whitespace, presumably a reconstruction.
+        if concept_and_reconstruction_pattern.match(line):
+            m = concept_and_reconstruction_pattern.match(line)
+            concept = Concept(name=m.group('name'), species=m.group('species'))
+            line = line.partition(m.group('sep'))[2].strip()
+
+        if match_languoids(line.split()[0]):  # Start of an etymon with an identified proto-language.
+            if witnesses:  # Yield last etymon.
+                yield concept, protoform, witnesses, comments, start_page, start_lineno
+            start_lineno, start_page = lineno, page
+            concept, witnesses, comments, cfwitnesses, cf = None, [], [], [], False
+            protoform = line
+        elif line.startswith('*') or line.startswith('#'):
+            # just a reconstruction without identified proto-language
+            if witnesses:
+                yield concept, protoform, witnesses, comments, start_page, start_lineno
+            start_lineno, start_page = lineno, page
+            concept, witnesses, comments, cfwitnesses, cf = None, [], [], [], False
+            protoform = line
+        elif line.startswith('['):
+            assert line.endswith(']')
+            comments.append(line[1:-1].strip())
+        elif line.startswith('cf. '):  # a "see also" witness
+            cfwitnesses.append(line)
+        elif line == 'cf.':
+            # Introduces a group of "see also" witnesses!
+            cf = True
+        elif line.startswith('?  '):  # dubious witness
+            #
+            # FIXME: handle!
+            #
+            pass
+        else:
+            # its to (in)
+            m = re.fullmatch(r'"?([A-Z0-9]+|to)(\s+([A-Z\-0-9]+|its|of|to|\(in\)|\+))*"?(\s+(=\s+)?`?[a-z/, ]+\'?)?', line)
+            assert len(line) > 5 and m, '{}: {}'.format(lineno, line)
+            concept = Concept(name=line)
 
     if witnesses:
         yield concept, protoform, witnesses, comments, start_page, start_lineno

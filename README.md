@@ -20,15 +20,23 @@ Available online at http://www.famsi.org/reports/01051/
 
 
 [![Build Status](https://travis-ci.org/lexibank/kaufmanpmed.svg?branch=master)](https://travis-ci.org/lexibank/kaufmanpmed)
-![Glottolog: 0%](https://img.shields.io/badge/Glottolog-0%25-red.svg "Glottolog: 0%")
+![Glottolog: 96%](https://img.shields.io/badge/Glottolog-96%25-green.svg "Glottolog: 96%")
 ![Concepticon: 0%](https://img.shields.io/badge/Concepticon-0%25-red.svg "Concepticon: 0%")
 ![Source: 0%](https://img.shields.io/badge/Source-0%25-red.svg "Source: 0%")
 
-- **Varieties:** 0 (linked to 0 different Glottocodes)
-- **Concepts:** 0 (linked to 0 different Concepticon concept sets)
-- **Lexemes:** 0
+- **Varieties:** 129 (linked to 47 different Glottocodes)
+- **Concepts:** 5,932 (linked to 0 different Concepticon concept sets)
+- **Lexemes:** 40,424
 - **Sources:** 0
-- **Synonymy:** 0.00
+- **Synonymy:** 4.19
+- **Cognacy:** 37,812 cognates in 3,034 cognate sets (50 singletons)
+- **Cognate Diversity:** -0.08
+
+## Possible Improvements:
+
+
+
+- Entries missing sources: 40424/40424 (100.00%)
 
 # Contributors
 

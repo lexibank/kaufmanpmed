@@ -13,7 +13,72 @@ GTz *ch'ok ?< **ch'oq
      EpM(Ch)   <RED-ch'o-ko> /chak=ch'ok/                             infant
      EpM(Ch)   <ch'o-ko> /ch'ok/                                      child, sprout; young, unripe
      EpM(Ch)   <ch'o-ko-le> /ch'oklel/                                youth
-    """
+    """,
+    """\
+========================================================================
+                              OVER
+""": """\
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                              OVER
+""",
+    """\
+=========================================================================
+
+                                  CHARCOAL
+""": """\
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                                  CHARCOAL
+""",
+    """\
+=========================================================================
+                                   SOOT
+""": """\
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                                   SOOT
+""",
+    """\
+                             PORCUPINE, STICKER BEAR
+""": """\
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                             PORCUPINE, STICKER BEAR
+""",
+    """\
+=========================================================================
+
+GREEN DEER
+""": """\
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                              GREEN DEER
+
+""",
+    """\
+==========================================================================
+                         GREEN DEERFLY
+""": """\
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                         GREEN DEERFLY
+""",
+    """\
+========================================================================
+                              STANDING
+""": """\
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                              STANDING
+""",
+    """\
+=========================================================================
+                                   160
+""": """\
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                                   160
+""",
+    """\
+=========================================================================
+                                   400
+""": """\
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                                   400
+"""
 }
 
 LINES = {
@@ -214,7 +279,7 @@ class ContinuationLines:
             if l.strip() == line.strip():
                 self.matched.append(i)
                 if i == 0:  # Matches the first line, return concatenation of all lines.
-                    assert self.matched == [0]
+                    assert self.matched == [0], l
                     if self.concatenated:
                         return self.concatenated, True
                     return l + ' ' + ' '.join(self.lines[1:]), True
@@ -288,7 +353,7 @@ CONTINUATION_LINES = [
             "                                                                          side of N",
         ],
         concatenated="      TZO       ta ERG-ich-on, 7ich-on-il               rn             in front of N, opposite N, on the front side of N  [rml]"
-    )
+    ),
 ]
 
 
